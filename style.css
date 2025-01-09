@@ -1,0 +1,32 @@
+body{
+    background-color: grey;
+    display: flex;
+    flex-flow: column;
+    margin: 0;
+}
+
+main{
+    background-color: black;
+    min-height: 800px;
+}
+
+footer{
+    background-color: darkblue;
+}
+
+#player_sprite{
+    background-color: blue;
+    position: fixed;
+    left: 0px;
+    height: 80px;
+    width: 80px;
+}
+
+#menu{
+    background-color: black;
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    align-content: center;
+    text-align: center;
+}

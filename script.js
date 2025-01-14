@@ -1,19 +1,96 @@
 let game = 0
+let checkpoints = 0
+let player
+let map
 
 class Player {
     constructor(x, y){
         this.x = x;
         this.y = y;
-        this.x_momentum = 0;
-        this.y_momentum = 0;
-        document.addEventListener("keydown", (e) => this.movementStart(e));
-        document.addEventListener("keyup", (e) => this.movementEnd(e));
-        setInterval(() => this.setPosition(), 10);
+        //this.x_momentum = 0;
+        //this.y_momentum = 0;
+        //document.addEventListener("keydown", (e) => this.movementStart(e));
+        //document.addEventListener("keyup", (e) => this.movementEnd(e));
+        //setInterval(() => this.setPosition(), 10);
+        document.addEventListener("keydown", (e) => this.movement(e.key))
     }
 
-    /*
+    movement(key){
+        let possible_moves = this.getPossibleTilesToMoveTo();
+        
+        switch (key){
+            case "w":
+                if (possible_moves[0] == true){
+                    this.y -= 1
+                    this.move()
+                    //this.checkInteractable()
+                    
+                    possible_moves = this.getPossibleTilesToMoveTo();
+                    if(possible_moves[0] == true && possible_moves[1] == false && possible_moves[3] == false){
+                        this.movement("w")
+                    }
+                }
+                break;
+            case "d":
+                if (possible_moves[1] == true){
+                    this.x += 1
+                    this.move()
+                    //this.checkInteractable()
 
-    */
+                    possible_moves = this.getPossibleTilesToMoveTo();
+                    if(possible_moves[0] == false && possible_moves[1] == true && possible_moves[2] == false){
+                        this.movement("d")
+                    }
+                }
+                break;
+            case "s":
+                if (possible_moves[2] == true){
+                    this.y += 1
+                    this.move()
+                    //this.checkInteractable()
+
+                    possible_moves = this.getPossibleTilesToMoveTo();
+                    if(possible_moves[2] == true && possible_moves[1] == false && possible_moves[3] == false){
+                        this.movement("s")
+                    }
+                }
+                break;
+            case "a":
+                if (possible_moves[3] == true){
+                    this.x -= 1
+                    this.move()
+                    //this.checkInteractable()
+
+                    possible_moves = this.getPossibleTilesToMoveTo();
+                    if(possible_moves[0] == false && possible_moves[2] == false && possible_moves[3] == true){
+                        this.movement("a")
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+        /*
+        if(map.tiles[this.x][this.y].hasOwn("interactable")){
+            map.tiles[this.x][this.y].interactable.interact()
+        }
+        */
+        if(Object.hasOwn(map.tiles[this.x][this.y], "interactable")){
+            map.tiles[this.x][this.y].interactable.interact()
+        }
+    }
+
+    move(){
+        document.getElementById("player_sprite").style.left = (this.x * this.width).toString() + "px";
+        document.getElementById("player_sprite").style.top = (this.y * this.height).toString() + "px";
+    }
+
+    checkInteractable(){
+        if(Object.hasOwn(map.tiles[this.x][this.y], "interactable")){
+            map.tiles[this.x][this.y].interactable.interact()
+        }
+    }
+    /*
     movementStart(event){
         switch (event.key) {
             case "a":
@@ -39,7 +116,7 @@ class Player {
                 break;
         }
     }
-
+    
     setPosition(){
         //this.x += 1;
         //console.log(this.x);
@@ -49,7 +126,7 @@ class Player {
         document.getElementById("player_sprite").style.left = this.x.toString() + "px";
         document.getElementById("player_sprite").style.top = this.y.toString() + "px";
     }
-
+    */
     setSize(){
         document.getElementById("player_sprite").style.width = (this.width - 4).toString() + "px";
         document.getElementById("player_sprite").style.height = (this.height - 4).toString() + "px";
@@ -58,13 +135,43 @@ class Player {
     setScale(map_x, map_y){
         this.width = 1600 / map_x
         this.height = 800 / map_y
+
+        if (this.x > 0){
+            this.x = map_x - 1;
+        }
+        if (this.y > 0){
+            this.y = map_y - 1;
+        }
+
+        this.move()
+    }
+
+    getPossibleTilesToMoveTo(){
+        let can_move_to = []
+        for(let i = 0; i < 4; i++){
+            let tile = map.getNeighbourTile(this.x, this.y, i)
+            
+            can_move_to[i] = false
+            if(tile != "none"){
+                if (tile.y < this.y && tile.walls[2] == "open"){
+                    can_move_to[i] = true
+                } else if (tile.x > this.x && tile.walls[3] == "open"){
+                    can_move_to[i] = true
+                } else if (tile.y > this.y && tile.walls[0] == "open"){
+                    can_move_to[i] = true
+                } else if (tile.x < this.x && tile.walls[1] == "open"){
+                    can_move_to[i] = true
+                }
+            }
+        }
+        return can_move_to
     }
 }
 
 class Map {
-    constructor(width, height){
-        this.width = width;
-        this.height = height;
+    constructor(){
+        this.width
+        this.height
         this.sides = ["top", "right", "bottom", "left"];
     }
 
@@ -88,8 +195,17 @@ class Map {
             }
         }
 
-        let x = 0;
-        let y = 0;
+        let tiles_to_add_checkpoint = [this.tiles[0][0], this.tiles[this.width - 1][0], this.tiles[0][this.height - 1], this.tiles[this.width - 1][this.height - 1]];
+        tiles_to_add_checkpoint.forEach(tile => {
+            if(tile.x != player.x || tile.y != player.y){
+                setTimeout(() => {
+                    tile.addInteractable(new Checkpoint(tile.x, tile.y, tile.sprite_id))
+                }, 100);
+            }
+        });
+
+        let x = player.x;
+        let y = player.y;
 
         while (this.getNeighbourTilesFreeOrToBacktrack(x, y).length > 0) {
             let tiles_to_move = this.getNeighbourTilesFreeOrToBacktrack(x, y);
@@ -151,6 +267,9 @@ class Map {
         }
 
         this.tiles[x][y].state = "done"
+
+        
+
         this.display()
     }
 
@@ -235,6 +354,11 @@ class Map {
             neighbour_tile = neighbour_tile.state
         }
         return neighbour_tile
+    }
+
+    setSize(width, height){
+        this.width = width;
+        this.height = height;
     }
 
     sleep(ms) {
@@ -323,23 +447,60 @@ class Tile {
         document.getElementById(this.sprite_id).style.backgroundColor = color
         */
     }
+
+    addInteractable(interactable){
+        this.interactable = interactable;
+    }
+}
+
+class Checkpoint {
+    constructor(x, y, sprite_id){
+        this.sprite_id = sprite_id
+        this.x = x
+        this.y = y
+        this.name = "checkpoint"
+        checkpoints += 1;
+        document.getElementById(this.sprite_id).style.backgroundColor = "goldenrod";
+    }
+
+    interact(){
+        checkpoints -= 1;
+        document.getElementById(this.sprite_id).style.backgroundColor = "transparent";
+        
+        if(checkpoints == 0){
+            newStart()
+        }
+
+        console.log(checkpoints)
+        delete map.tiles[this.x][this.y].interactable
+    }
 }
 
 function startGame(){
-    document.getElementById("menu").style.display = "none";
-    let player = new Player(0, 0);
+    document.getElementById("menu").style.opacity = "0";
+    setTimeout(() => document.getElementById("menu").style.display = "none", 500)
 
+    player = new Player(0, 0);
+    map = new Map();
+    
+    newStart()
+}
+
+function newStart(){
     game += 1
+
     let width = 10 + game * 2
     let height = 5 + game
-    /*
-    let width = 98 + game * 2
-    let height = 49 + game
-    */
-    let map = new Map(width, height);
+    if(width > 50){
+        width = 50
+    }
+    if(height > 25){
+        height = 25
+    }
+
     player.setScale(width, height)
     player.setSize()
-    
+    map.setSize(width, height)
     map.generate()
 }
 

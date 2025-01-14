@@ -1,7 +1,9 @@
-let game = 0
-let checkpoints = 0
+let game
+let checkpoints
 let player
 let map
+let time;
+let timer
 
 class Player {
     constructor(x, y){
@@ -75,6 +77,7 @@ class Player {
             map.tiles[this.x][this.y].interactable.interact()
         }
         */
+        console.log(this.x.toString() + this.y.toString())
         if(Object.hasOwn(map.tiles[this.x][this.y], "interactable")){
             map.tiles[this.x][this.y].interactable.interact()
         }
@@ -86,6 +89,7 @@ class Player {
     }
 
     checkInteractable(){
+        
         if(Object.hasOwn(map.tiles[this.x][this.y], "interactable")){
             map.tiles[this.x][this.y].interactable.interact()
         }
@@ -483,11 +487,22 @@ function startGame(){
     player = new Player(0, 0);
     map = new Map();
     
+    game = 0
+    time = 0
+    timer = setInterval(() => setTimer(), 1000);
+
     newStart()
 }
 
 function newStart(){
+    checkpoints = 0
     game += 1
+    document.getElementById("game_counter").innerHTML = "lvl " + game.toString() + "/20"
+
+    if (game > 20){
+        end()
+        return
+    }
 
     let width = 10 + game * 2
     let height = 5 + game
@@ -504,3 +519,31 @@ function newStart(){
     map.generate()
 }
 
+function setTimer(){
+    time += 1
+    document.getElementById("timer").innerHTML = getTime()
+}
+
+function getTime(){
+    let time_string = Math.floor(time / 60).toString() + ":"
+    if (time % 60 < 10){
+        time_string += "0"
+    }
+    time_string += (time % 60).toString()
+
+    return time_string
+}
+
+function end(){
+    clearInterval(timer);
+    document.getElementById("start").style.display = "none"
+    document.getElementById("score").style.display = "flex"
+    document.getElementById("time").innerHTML = getTime()
+    setTimeout(() => document.getElementById("menu").style.opacity = "100", 500)
+    document.getElementById("menu").style.display = "block"
+    
+}
+
+function refresh(){
+    window.location.reload();
+}

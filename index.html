@@ -14,10 +14,20 @@
         <player id="player_sprite"></player>
     </main>
     <footer>
-        
+        <div id="game_counter">game</div>
+        <div id="timer">0:00</div>
     </footer>
     <div id="menu">
-        <button id="button_start" onclick="startGame()">START</button>
+        <div id="score">
+            <a id="time"></a>
+            <button id="refresh" onclick="refresh()">again?</button>
+        </div>
+        <div id="start">
+            you are <a style="color:blue">blue</a><br>
+            move using W, A, S, D<br>
+            collect all <a style="color:goldenrod">yellows</a><br>
+            <button id="button_start" onclick="startGame()">START</button>
+        </div>
     </div>
 </body>
 </html>

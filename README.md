@@ -1,3 +1,3 @@
-# js_projekt_24-25
+# Javascript Labyrinth
 
-a simple labyrinth-solving game made entirely in javascript as a web app
+A simple labyrinth-solving game made as a web app entirely in javascript
